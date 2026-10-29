@@ -9,9 +9,21 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                echo 'Installing Python dependencies...'
-                sh 'python3 -m pip install --upgrade pip'
-                sh 'pip install -r requirements.txt || true'
+                echo 'Installing Python dependencies in a virtual environment...'
+                sh '''
+                    python3 -m venv venv
+                    ./venv/bin/pip install --upgrade pip
+                    ./venv/bin/pip install -r requirements.txt
+                '''
+            }
+        }
+        stage('Run Application') {
+            steps {
+                echo 'Starting Django app with Gunicorn...'
+                sh '''
+                    pkill -f "gunicorn" || true
+                    ./venv/bin/gunicorn notesapp.wsgi:application --bind 0.0.0.0:8000 &
+                '''
             }
         }
     }
