@@ -14,6 +14,7 @@ pipeline {
                     python3 -m venv venv
                     ./venv/bin/pip install --upgrade pip
                     ./venv/bin/pip install -r requirements.txt
+                    ./venv/bin/pip install setuptools
                 '''
             }
         }
@@ -22,7 +23,9 @@ pipeline {
                 echo 'Starting Django app with Gunicorn...'
                 sh '''
                     pkill -f "gunicorn" || true
-                    ./venv/bin/gunicorn notesapp.wsgi:application --bind 0.0.0.0:8000 &
+                    nohup ./venv/bin/gunicorn notesapp.wsgi:application --bind 0.0.0.0:8000 > app.log 2>&1 &
+                    sleep 3
+                    ps aux | grep gunicorn
                 '''
             }
         }
